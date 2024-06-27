@@ -1,16 +1,9 @@
 library(Seurat)
-
-# plotting and data science packages
 library(tidyverse)
 library(cowplot)
 library(patchwork)
-
-# install this package, which allows us to compute distance between the spots
 library(proxy)
-
-# set random seed for reproducibility
 set.seed(12345)
-
 path <- "/mnt/data/Projects/SW480_spheres/Out/Seurat/"
 
 #### Merge Spatial Transcriptomics Sets ####
@@ -36,7 +29,6 @@ Spatial_CRC <- Spatial_CRC %>%
 # plot UMAP embedding
 DimPlot(Spatial_CRC, label=TRUE, repel = TRUE, reduction = "umap", group.by = "Sample") + NoLegend()
 
-
 # make a dataframe containing the image coordinates for each sample
 image_df <- do.call(rbind, lapply(names(Spatial_CRC@images), function(x){
   Spatial_CRC@images[[x]]@coordinates
@@ -52,7 +44,6 @@ new_meta <- new_meta[ix,]
 
 # add the new metadata to the seurat object
 Spatial_CRC@meta.data <- new_meta
-
 
 Spatial_CRC@meta.data %>% group_by(Sample) %>% summarize(N = n())
 Spatial_CRC$Sample <- factor(Spatial_CRC$Sample, levels = c("CRC1", "CRC2", "CRC3", "CRC4",
@@ -114,7 +105,6 @@ Spatial_CRC_integrated <- Spatial_CRC_integrated %>%
   ScaleData()
 
 DefaultAssay(Spatial_CRC_integrated) <- "integrated"
-
 # Run the standard workflow for visualization and clustering
 Spatial_CRC_integrated <- ScaleData(Spatial_CRC_integrated, verbose = FALSE)
 Spatial_CRC_integrated <- RunPCA(Spatial_CRC_integrated, npcs = 50, verbose = FALSE)
@@ -134,7 +124,6 @@ GOI <- c("ASCL2", "EPCAM", "VIL1",
 
 DotPlot(Spatial_CRC_integrated, group.by = "seurat_clusters", features = GOI) + coord_flip() + xlab("") + ylab("") +
   scale_color_viridis_c()
-
 
 # Annotation
 Spatial_CRC_integrated$Celltype <- "Other"
@@ -165,7 +154,6 @@ DotPlot(Spatial_CRC_integrated, group.by = "Celltype", features = GOI) + coord_f
 # Palette
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
-
 DimPlot(Spatial_CRC_integrated, group.by = "Celltype", cols = Palette)
 
 # Spatial ggplot2
@@ -201,16 +189,13 @@ Spatial_CRC_integrated@meta.data %>% dplyr::select(Annotation, Sample, Study) %>
   xlab("") + facet_grid(~ Study, scales = "free_x", space = "free") + theme(strip.background = element_blank()) + 
   ylab("Distribution of Cell types") + scale_fill_manual(values = Palette_2[-4])
 
-
-
 Spatial_CRC_integrated$Sample <- factor(Spatial_CRC_integrated$Sample, levels = c("CRC1", "CRC2", "CRC3", "CRC4",
                                                                                   "CRC5", "CRC5_LM", "CRC6", "CRC6_LM",
                                                                                   "CRC7", "CRC7_LM", "CRC8", "CRC8_LM",
                                                                                   "CRC9_R1", "CRC9_R2", "CRC10_R1", "CRC10_R2",
                                                                                   "CRC11_R1", "CRC11_R2", "CRC12_R1", "CRC12_R2",
                                                                                   "CRC13_R1", "CRC13_R2", "CRC14_R1", "CRC14_R2",
-                                                                                  "CRC15_R1", "CRC15_R2"
-))
+                                                                                  "CRC15_R1", "CRC15_R2"))
 Spatial_CRC_integrated$Study <- factor(Spatial_CRC_integrated$Study, levels = c("Qi", "Wu", "Valdeolivas"))
 
 FeaturePlot(Spatial_CRC_integrated, features = c("nCount_Spatial", "nFeature_Spatial"))
@@ -219,7 +204,6 @@ p1 <- DimPlot(Spatial_CRC_integrated, reduction = "umap", group.by = "Sample")
 p2 <- DimPlot(Spatial_CRC_integrated, reduction = "umap", group.by = "Annotation", label = TRUE,
               repel = TRUE)
 p1 + p2
-
 
 #saveRDS(Spatial_CRC_integrated, "/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_merge_integrated.rds")
 
@@ -234,7 +218,6 @@ Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD04
 Palette_3 <- c("lightgrey", "#CD0404")
 
 Spatial_CRC_integrated <- readRDS("/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_merge_integrated.rds")
-
 Spatial_CRC_integrated$Group <- "Other"
 Spatial_CRC_integrated$Group[Spatial_CRC_integrated$Annotation == "Tumor" & Spatial_CRC_integrated@reductions$umap@cell.embeddings[,2] > -2] <- "Tumor"
 
@@ -242,7 +225,6 @@ DimPlot(Spatial_CRC_integrated, group.by = "Celltype", cols = Palette)
 DimPlot(Spatial_CRC_integrated, group.by = "Annotation", cols = Palette_2)
 DimPlot(Spatial_CRC_integrated, group.by = "Group", cols = Palette_3)
 DimPlot(Spatial_CRC_integrated, group.by = "Sample")
-
 FeatureScatter(Spatial_CRC_integrated, feature1 = "nCount_Spatial", feature2 = "nFeature_Spatial", group.by = "Celltype", cols = Palette)
 
 # Make Cell_type2
@@ -258,8 +240,6 @@ Spatial_CRC_integrated$Annotation[Spatial_CRC_integrated$CelltypeII %in% c("Poor
 Spatial_CRC_integrated$Annotation[Spatial_CRC_integrated$CelltypeII %in% c("Immune", "Macrophages")] <- "Immune"
 Spatial_CRC_integrated$Annotation[Spatial_CRC_integrated$CelltypeII %in% c("Neuron")] <- "ENS"
 Spatial_CRC_integrated$Annotation[Spatial_CRC_integrated$CelltypeII %in% c("Tumor")] <- "Tumor"
-
-
 
 # Spatial ggplot2
 Spatial_CRC_integrated@meta.data %>% 
@@ -287,6 +267,4 @@ Spatial_CRC_integrated@meta.data %>% dplyr::select(Annotation, Sample, Study) %>
   xlab("") + facet_grid(~ Study, scales = "free_x", space = "free") + theme(strip.background = element_blank()) + 
   ylab("Distribution of Cell types") + scale_fill_manual(values = Palette_2[-4]) + geom_hline(yintercept = 0.2)
 
-
 write.csv(Spatial_CRC_integrated@meta.data, "/mnt/data/Projects/SW480_spheres/Out/Spatial_CRC_integrated_metadata.csv")
-
