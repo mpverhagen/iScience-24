@@ -1,16 +1,9 @@
 library(Seurat)
-
-# plotting and data science packages
 library(tidyverse)
 library(cowplot)
 library(patchwork)
-
-# install this package, which allows us to compute distance between the spots
 library(proxy)
-
-# set random seed for reproducibility
 set.seed(12345)
-
 path <- "/mnt/data/Projects/SW480_spheres/Out/Seurat/"
 
 #### Neighbourhood Analysis ####
@@ -18,11 +11,9 @@ library(ggplot2)
 library(dplyr)
 library(sf)
 
-
 Spatial_CRC_integrated_metadata <- read.csv("/mnt/data/Projects/SW480_spheres/Out/Spatial_CRC_integrated_metadata.csv", row.names=1)
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
-
 
 # Spatial plot example
 Spatial_CRC_integrated_metadata %>% filter(Sample == "CRC1") %>%
@@ -61,7 +52,6 @@ Spatial_out %>% filter(Sample == "CRC1") %>%
   ggplot(aes(x = imagecol, y = imagerow, color = grid_id)) + geom_point(size = 1) + facet_wrap(~ Sample, ncol = 5, scales = "free") + theme_classic() + 
   Seurat::NoLegend() + scale_color_manual(values = rep(c("orange", "blue", "red", "brown","grey", "black", "magenta", "pink", "darkgreen","white", "yellow", "green",  "darkblue"), times = 1000))
 
-
 ### Neighbourhood Seurat ####
 library(Seurat)
 library(ggplot2)
@@ -71,10 +61,7 @@ setwd("/mnt/data/Projects/SW480_spheres/")
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
 
-Spatial_CRC_integrated <- readRDS("/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_merge_integrated.rds")
-
 Spatial_CRC_integrated <- AddMetaData(Spatial_CRC_integrated, metadata = data.frame(Spatial_out[,21:22]))
-
 
 # Merge  data by Neighbourhood
 #NN_dat <- AverageExpression(Spatial_CRC_integrated, group.by = "grid_id", assays = "integrated", slot = "data")
@@ -93,13 +80,10 @@ rownames(NN_metadat) <- NN_metadat$grid_id
 NN.Seur <- CreateSeuratObject(counts = NN_dat,
                               meta.data = NN_metadat)
 
-
 NN.Seur <- NN.Seur %>% NormalizeData() %>%  FindVariableFeatures() %>% ScaleData() %>% RunPCA() %>% RunUMAP(1:30)
-
 
 DimPlot(NN.Seur, group.by = "Sample")
 DimPlot(NN.Seur, group.by = "Nspots")
-
 saveRDS(NN.Seur, "/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_Neighbourhood.rds")
 
 ### Neighbourhood Rpca ####
@@ -109,10 +93,7 @@ library(dplyr)
 setwd("/mnt/data/Projects/SW480_spheres/")
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
-
-
 NN.Seur <- readRDS("/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_Neighbourhood.rds")
-
 DimPlot(NN.Seur, reduction = "umap", group.by = "Sample", label = TRUE, repel = TRUE) + NoLegend()
 
 
@@ -160,7 +141,6 @@ DimPlot(NN.Seur_integrated, reduction = "umap", group.by = "seurat_clusters", la
 DimPlot(NN.Seur_integrated, reduction = "umap", group.by = "Sample")
 
 DefaultAssay(NN.Seur_integrated) <- "RNA"
-
 saveRDS(NN.Seur_integrated, "/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_Neighbourhood_integrated.rds")
 
 ### Neighbourhood evaluation ####
@@ -173,9 +153,7 @@ Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
 
 NN.Seur_integrated <- readRDS("/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_Neighbourhood_integrated.rds")
-
 DimPlot(NN.Seur_integrated, reduction = "umap", group.by = "seurat_clusters", label = TRUE, repel = TRUE)
-
 FeaturePlot(NN.Seur_integrated, features = c("EPCAM", "VIM"))
 
 Pct.dat <- NN.Seur_integrated@meta.data %>% 
@@ -193,7 +171,6 @@ pheatmap::pheatmap(Pct.dat.heat, angle_col = 0, display_numbers = T, treeheight_
                    color  = viridis::inferno(10)[2:8],
                    cluster_cols = F)
 
-
 # Annotation
 NN.Seur_integrated$Niche <- "Other"
 NN.Seur_integrated$Niche[NN.Seur_integrated$seurat_clusters == "0"] <- "Liver niche"
@@ -207,7 +184,6 @@ NN.Seur_integrated$Niche[NN.Seur_integrated$seurat_clusters == "7"] <- "Colon ep
 NN.Seur_integrated$Niche[NN.Seur_integrated$seurat_clusters == "8"] <- "Liver epithelium"
 NN.Seur_integrated$Niche[NN.Seur_integrated$seurat_clusters == "9"] <- "Smooth muscle"
 NN.Seur_integrated$Niche[NN.Seur_integrated$seurat_clusters == "10"] <- "ENS"
-
 
 Pct.dat <- NN.Seur_integrated@meta.data %>% 
   dplyr::select(-nFeature_RNA, -nCount_RNA, -grid_id, -Sample, -Nspots, -orig.ident, -integrated_snn_res.0.3, -integrated_snn_res.0.2, -seurat_clusters) %>%
@@ -237,12 +213,10 @@ library(dplyr)
 library(reshape2)
 library(sf)
 
-
 Spatial_CRC_integrated_metadata <- read.csv("/mnt/data/Projects/SW480_spheres/Out/Spatial_CRC_integrated_metadata.csv", row.names=1)
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
 Palette_niche <- c("lightgrey", "#00B2CA", "#F865B0", "#1D4E89", "#C5AFA0", "#E9BCB7", "#285943", "#94A187","#984447", "#DF2935")
-
 
 Sample.take <- names(table(Spatial_CRC_integrated_metadata$Sample))
 Spatial_out <- data.frame()
@@ -275,7 +249,6 @@ Spatial_out %>% filter(Sample == "CRC1") %>%
   ggplot(aes(x = imagecol, y = imagerow, color = grid_id)) + geom_point(size = 1) + facet_wrap(~ Sample, ncol = 5, scales = "free") + theme_classic() + 
   Seurat::NoLegend() + scale_color_manual(values = rep(c("orange", "blue", "red", "brown","grey", "black", "magenta", "pink", "darkgreen","white", "yellow", "green",  "darkblue"), times = 1000))
 
-
 Spatial_CRC_integrated <- readRDS("/mnt/data/Projects/SW480_spheres/Out/Seurat/Spatial_merge_integrated.rds")
 # Add to Seurat object
 Spatial_CRC_integrated <- AddMetaData(Spatial_CRC_integrated, metadata = data.frame(Spatial_out[,21:22]))
@@ -290,9 +263,6 @@ new_meta.data <- new_meta.data[,24:25]
 
 # Add to Seurat object
 Spatial_CRC_integrated <- AddMetaData(Spatial_CRC_integrated, metadata = data.frame(new_meta.data))
-
-
-
 
 Spatial_CRC_integrated@meta.data %>% filter(Sample == "CRC1") %>%
   ggplot(aes(x = imagecol, y = imagerow, color = Annotation)) + geom_point(size = 1) + facet_wrap(~ Sample, ncol = 5, scales = "free") +
@@ -318,9 +288,6 @@ library(reshape2)
 #library(sf)
 Palette <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#CD0404")
 Palette_sub <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#1B998B", "firebrick", "orange", "#93827F","#BCD8B7",   "blue", "magenta", "pink")
-
-
-
 Palette_2 <- c("#FFD4D4", "#CFB997",  "#8DCBE6", "lightgrey", "#ABC270",  "#CD0404")
 Palette_niche <- c("lightgrey", "#00B2CA", "#F865B0", "#1D4E89", "#C5AFA0", "#E9BCB7", "#285943", "#94A187","#984447", "#DF2935")
 
@@ -340,13 +307,10 @@ Spatial_CRC_integrated <- FindSubCluster(
   algorithm = 1
 )
 DefaultAssay(Spatial_CRC_integrated) <- "Spatial"
-
 table(Spatial_CRC_integrated$sub.cluster, Spatial_CRC_integrated$Celltype)
 
 DimPlot(Spatial_CRC_integrated, group.by = "sub.cluster", cols = Palette_sub)
-
 Cluster_cor <- AverageExpression(Spatial_CRC_integrated, assays = "integrated", group.by = "sub.cluster")
-#pheatmap::pheatmap(cor(Cluster_cor$integrated), number_color = "black", display_numbers = T)
 
 # Cluster 5 is similar to Cluster 0 and 2, Cluster 6 is similar to 1 and 3
 # Group small clusters with the largest similar cluster
@@ -384,8 +348,6 @@ Spatial_CRC_integrated@meta.data %>% dplyr::select(sub.cluster, Site, Study, Tum
   xlab("") + facet_grid(~Tumor, scales = "free_x", space = "free") + theme(strip.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1)) + 
   ylab("Fraction per sample") + scale_fill_manual("Celltype",values = Palette_sub[-8]) 
 
-
-
 Spatial_CRC_integrated@meta.data %>% dplyr::select(sub.cluster, Sample, Study, Tumor) %>%
   filter(sub.cluster != "Poor quality", Tumor == "Tumor") %>%
   mutate(Sample = factor(Sample), sub.cluster = factor(sub.cluster)) %>%
@@ -398,23 +360,10 @@ library(Seurat)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
-#library(sf)
-#Markers.all <- FindAllMarkers(Spatial_CRC_integrated, logfc.threshold = 0.5, only.pos = T)
-#write.csv(Markers.all, "/mnt/data/Projects/SW480_spheres/Out/Spatial_Markers_Celltype.csv")
-#Spatial_CRC_integrated <- SetIdent(Spatial_CRC_integrated, value = "sub.cluster")
-#Markers.all.sub <- FindAllMarkers(Spatial_CRC_integrated, logfc.threshold = 0.5, only.pos = T)
-#write.csv(Markers.all.sub, "/mnt/data/Projects/SW480_spheres/Out/Spatial_Markers_Tumor_subcluster.csv")
-Markers.all.sub <- read.csv("/mnt/data/Projects/SW480_spheres/Out/Spatial_Markers_Tumor_subcluster.csv", row.names=1)
-
-Markers.tumor.sub <- Markers.all.sub %>% filter(p_val_adj < 0.05, cluster %in% c("Tumor_0", "Tumor_1","Tumor_2", "Tumor_3","Tumor_4","Tumor_5"))
-
 
 GOI <- c("ASCL2","HOXA2", "HOXA3", "LGR5", "MYC", "VIM", "SPARC","RUNX2", "ZEB1" ,"CD44","ESRP1", "EMP1","MAL2","TACSTD2", "EPCAM","MUC2", "SPINK4","TFF2","AGR2" , "NOTUM","CCL20","LCN2", "CD24","REG3A", "RPS24")
-
-
 Cluster_exp <- AverageExpression(Spatial_CRC_integrated, assays = "Spatial", features = GOI, group.by = "sub.cluster", slot = "data")
 cal_z_score <- function(x){(x - mean(x)) / sd(x)}
-
 Cluster_exp_z <- data.frame(t(apply(Cluster_exp$Spatial[,11:15], 1, cal_z_score)))
 
 # Tumor marker plot
@@ -425,14 +374,12 @@ pheatmap::pheatmap(Cluster_exp_z, border_color = "black", cluster_cols = F, clus
 pheatmap::pheatmap(Cluster_exp_z, border_color = "white", cluster_cols = F, cluster_rows = F, angle_col = 0)
 
 # Make niche overview
-
 # Filter out grid_id that include poor quality spots
 Pct.dat <- Spatial_CRC_integrated@meta.data %>% 
   dplyr::select(sub.cluster, Niche, grid_id) %>% 
   filter(! grid_id %in% unique(Spatial_CRC_integrated$grid_id[Spatial_CRC_integrated$sub.cluster == "Poor quality"])) %>%
   group_by(sub.cluster, Niche) %>% summarise(N = n()) %>%
   mutate(pct = round(N/sum(N)*100, 2))
-
 
 Pct.dat.heat <- Pct.dat %>% dplyr::select(-N) %>% dcast(sub.cluster ~ Niche) %>% replace(is.na(.), 0)
 rownames(Pct.dat.heat) <- Pct.dat.heat$sub.cluster
@@ -446,7 +393,6 @@ pheatmap::pheatmap(Pct.dat.heat, angle_col = 90, display_numbers = T, treeheight
 
 # new colors
 rownames(Pct.dat.heat)[10:14] <- c("CSC", "EMT", "HRC", "Secretoty", "Inflammatory")
-
 pheatmap::pheatmap(Pct.dat.heat, angle_col = 90, display_numbers = T, treeheight_row = 15, treeheight_col = 0,
                    border_color = "black", number_color = "black",
                    cluster_cols = T,
@@ -455,7 +401,6 @@ pheatmap::pheatmap(Pct.dat.heat, angle_col = 90, display_numbers = T, treeheight
 Spatial_CRC_integrated$tissue <- "Primary"
 Spatial_CRC_integrated$tissue[grep("LM", Spatial_CRC_integrated$Sample)] <- "Liver met"
 Spatial_CRC_integrated$tissue <- factor(Spatial_CRC_integrated$tissue, levels = c("Primary", "Liver met"))
-
 DimPlot(Spatial_CRC_integrated, group.by = "sub.cluster", cols = Palette_sub, split.by = "tissue")
 
 # Compare tumor sub clusters between primary and liver met
@@ -464,7 +409,6 @@ Spatial_CRC_integrated@meta.data %>% group_by(tissue, sub.cluster) %>% summarize
   mutate(freq = N/sum(N)*100) %>%
   ggplot(aes(x = tissue, y = freq, fill = sub.cluster)) + geom_bar(stat = "identity", width = 0.7) + 
   theme_classic() + xlab("") + ylab("% of Tumor") + scale_fill_manual(values = Palette_sub[11:15])
-
 
 # Compare neighbourhoods
 Nhood_dat <- Spatial_CRC_integrated@meta.data %>% 
@@ -477,22 +421,16 @@ Nhood_dat %>% group_by(Niche, sub.cluster) %>% summarize(N = n()) %>%
   ggplot(aes(x = Niche, y = N, fill = sub.cluster)) + geom_bar(stat = "identity", position = "fill") +
   theme_classic() +  RotatedAxis() + scale_fill_manual(values = Palette_sub[11:15]) + ylab("Fraction of Tumor")
 
-
 #### Single Examples: Spatial Plots ####
-
 #Spatial_metadata <- readr::read_csv("/mnt/data/Projects/SW480_spheres/Out/Spatial_metadata_26oct.csv")
 Spatial_metadata <- readr::read_csv("/mnt/data/Projects/SW480_spheres/Out/Spatial_metadata_09jan24.csv")
-
+                     
 Palette_sub <- c("#FFD4D4", "#CFB997", "#E3F6FF", "#8DCBE6", "#EF9A53", "#E3ACF9", "#EAE0DA", "lightgrey", "#ABC270", "#658864", "#1B998B", "firebrick", "orange", "#93827F","#BCD8B7",   "blue", "magenta", "pink")
-
 Palette_col <- c("firebrick", "red", "#7C96AB","orange", "#1B998B","#FFD4D4", "#CFB997", "#E3F6FF","#8DCBE6", "#EF9A53","#E3ACF9","#EAE0DA","lightgrey","#ABC270","#658864" ,"#CD0404")
-
 Palette_col <- c("firebrick", "red", "grey","orange", "#1B998B","#FFD4D4", "#CFB997", "#E3F6FF","#8DCBE6", "#EF9A53","#E3ACF9","#EAE0DA","lightgrey","#ABC270","#658864" ,"#CD0404")
-
 
 # Load Sample: CRC3
 CRC3 <- readRDS("/mnt/data/Projects/SW480_spheres/Data/Qi_Spatial/CRC3_ST_SeuratObject.rds.gz")
-
 # Add Meta data
 meta_3 <- data.frame(Spatial_metadata[Spatial_metadata$Sample == "CRC3",])
 rownames(meta_3) <- gsub("_1_1_1", "", meta_3$Row.names)
@@ -501,43 +439,34 @@ SpatialDimPlot(CRC3, group.by = "sub.cluster") + scale_fill_manual(values = Pale
 SpatialDimPlot(CRC3, group.by = "DefineTypes") 
 SpatialDimPlot(CRC3, group.by = "DefineTypes", alpha = 0) 
 CRC3_Tumor <- subset(CRC3, subset = Celltype == "Tumor")
-
 SpatialDimPlot(CRC3_Tumor, group.by = "sub.cluster") + scale_fill_manual(values = Palette_sub[11:15])
 SpatialDimPlot(CRC3_Tumor, group.by = "sub.cluster", alpha = 0) + scale_fill_manual(values = Palette_col[c(1,2,4:6, 8:9,11:15)])
 SpatialFeaturePlot(CRC3_Tumor, features = c("LGR5", "ZEB1", "EMP1"))
 
 # Load Sample: CRC5
 CRC5 <- Load10X_Spatial(data.dir = "/mnt/data/Projects/SW480_spheres/Data/Wu_Spatial/ST/ST-colon1")
-
 # Add Meta data
 meta_5 <- data.frame(Spatial_metadata[Spatial_metadata$Sample == "CRC5",])
 rownames(meta_5) <- gsub("_1_1_1_1_2_1", "", meta_5$Row.names)
 CRC5 <- AddMetaData(CRC5, metadata = meta_5)
-
 # Remove hepatocytes
 CRC5 <- subset(CRC5, subset = Celltype != "Hepatocytes")
 SpatialDimPlot(CRC5, group.by = "Celltype") + scale_fill_manual(values = Palette_col[c(1,2,4:6, 8:9,11:15)])
-
 # Subset tumor
 CRC5_Tumor <- subset(CRC5, subset = Celltype == "Tumor")
-
 SpatialDimPlot(CRC5_Tumor, group.by = "sub.cluster") + scale_fill_manual(values = Palette_sub[11:15])
 SpatialDimPlot(CRC5_Tumor, group.by = "sub.cluster", alpha = 0) + scale_fill_manual(values = Palette_col[c(1,2,4:6, 8:9,11:15)])
 SpatialFeaturePlot(CRC5_Tumor, features = c("LGR5", "ZEB1", "EMP1"))
 
-
 # Load Sample: CRC8
 CRC8 <- Load10X_Spatial(data.dir = "/mnt/data/Projects/SW480_spheres/Data/Wu_Spatial/ST/ST-colon4")
-
 # Add Meta data
 meta_8 <- data.frame(Spatial_metadata[Spatial_metadata$Sample == "CRC8",])
 rownames(meta_8) <- gsub("_2_1_1_2_1", "", meta_8$Row.names)
 CRC8 <- AddMetaData(CRC8, metadata = meta_8)
-
 # Remove hepatocytes
 CRC8 <- subset(CRC8, subset = Celltype != "Hepatocytes")
 SpatialDimPlot(CRC8, group.by = "Celltype") + scale_fill_manual(values = Palette_col[c(1:6, 8:9,11:15)])
-
 # Subset tumor
 CRC8_Tumor <- subset(CRC8, subset = Celltype == "Tumor")
 SpatialDimPlot(CRC8_Tumor, group.by = "sub.cluster") + scale_fill_manual(values = Palette_sub[11:15])
@@ -545,16 +474,13 @@ SpatialDimPlot(CRC8_Tumor, group.by = "sub.cluster", alpha = 0) + scale_fill_man
 
 # Load Sample: CRC9_R1
 CRC9_R1 <- Load10X_Spatial(data.dir = "/mnt/data/Projects/SW480_spheres/Data/Valdeolivas_Spatial/SN048_A121573_Rep1/SN048_A121573_Rep1")
-
 # Add Meta data
 meta_9R1 <- data.frame(Spatial_metadata[Spatial_metadata$Sample == "CRC9_R1",])
 rownames(meta_9R1) <- gsub("_1_1_1_1_1_1_1_2", "", meta_9R1$Row.names)
 CRC9_R1 <- AddMetaData(CRC9_R1, metadata = meta_9R1)
-
 # Remove hepatocytes
 CRC9_R1 <- subset(CRC9_R1, subset = Celltype != "Hepatocytes")
 SpatialDimPlot(CRC9_R1, group.by = "Celltype") + scale_fill_manual(values = Palette_col[c(1:6, 8:9,11:15)])
-
 # Subset tumor
 CRC9_R1_Tumor <- subset(CRC9_R1, subset = Celltype == "Tumor")
 SpatialDimPlot(CRC9_R1_Tumor, group.by = "sub.cluster") + scale_fill_manual(values = Palette_sub[11:15])
